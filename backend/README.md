@@ -18,6 +18,53 @@ This is the backend API for the Hotel Booking website. It provides endpoints for
 - MongoDB with Mongoose
 - JWT for authentication
 
+## Deployment Guide
+
+### Backend Deployment (Render)
+
+1. **Prepare MongoDB Atlas Database:**
+   - Sign up at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+   - Create a new cluster (free tier)
+   - Set up database access (create a user with password)
+   - Set up network access (allow access from anywhere)
+   - Get your connection string
+
+2. **Deploy to Render:**
+   - Sign up at [Render](https://render.com)
+   - Create a new Web Service
+   - Connect your GitHub repository
+   - Configure the service:
+     - Name: `hotel-booking-api`
+     - Environment: `Node`
+     - Build Command: `npm install`
+     - Start Command: `npm start`
+   - Add environment variables:
+     - `PORT`: `8000`
+     - `MONGODB_URI`: Your MongoDB Atlas connection string
+     - `JWT_SECRET`: A secure random string
+     - `JWT_EXPIRES_IN`: `30d`
+   - Deploy
+
+### Frontend Deployment (Netlify)
+
+1. **Prepare the Frontend:**
+   - Update API endpoint URLs in the frontend to point to your Render backend URL
+   - Create a `.env` file in the frontend directory with:
+     ```
+     VITE_API_URL=https://your-render-backend-url.onrender.com/api
+     ```
+
+2. **Deploy to Netlify:**
+   - Sign up at [Netlify](https://www.netlify.com)
+   - Connect your GitHub repository
+   - Configure the build settings:
+     - Base directory: `front-end` (or your frontend directory name)
+     - Build command: `npm run build`
+     - Publish directory: `dist`
+   - Deploy
+
+## Local Development
+
 ## Getting Started
 
 ### Prerequisites
