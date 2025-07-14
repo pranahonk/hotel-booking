@@ -73,15 +73,13 @@ const router = createRouter({
   routes
 })
 
-// Navigation guard to check for authentication
 router.beforeEach((to, from, next) => {
   const isAuthenticated = authService.isAuthenticated()
-  
+
   if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
-    // Redirect to login with return path
-    next({ 
-      path: '/login', 
-      query: { redirect: to.fullPath } 
+        next({
+      path: '/login',
+      query: { redirect: to.fullPath }
     })
   } else {
     next()

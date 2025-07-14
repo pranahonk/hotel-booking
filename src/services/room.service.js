@@ -1,14 +1,13 @@
 import api from './api.js';
 
-// Room service
 const roomService = {
   // Get all rooms with optional filtering
   async getRooms(filters = {}) {
     let queryString = '';
-    
+
     if (Object.keys(filters).length > 0) {
       const params = new URLSearchParams();
-      
+
       // Handle price filters with gte and lte options
       if (filters.priceGte) params.append('price[gte]', filters.priceGte);
       if (filters.priceLte) params.append('price[lte]', filters.priceLte);
@@ -16,10 +15,10 @@ const roomService = {
       if (filters.sort) params.append('sort', filters.sort);
       if (filters.page) params.append('page', filters.page);
       if (filters.limit) params.append('limit', filters.limit);
-      
+
       queryString = `?${params.toString()}`;
     }
-    
+
     return await api.get(`/rooms${queryString}`);
   },
 
@@ -34,7 +33,7 @@ const roomService = {
     params.append('roomId', roomId);
     params.append('checkIn', checkIn);
     params.append('checkOut', checkOut);
-    
+
     return await api.get(`/rooms/availability?${params.toString()}`);
   }
 };

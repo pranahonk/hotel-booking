@@ -12,37 +12,31 @@ const errorMessage = ref('')
 const isLoading = ref(false)
 
 async function login() {
-  // Basic validation
-  if (!email.value || !password.value) {
+    if (!email.value || !password.value) {
     errorMessage.value = 'Please enter both email and password'
     return
   }
-  
-  // Validate email format
-  if (!email.value.includes('@')) {
+
+    if (!email.value.includes('@')) {
     errorMessage.value = 'Please enter a valid email address'
     return
   }
-  
+
   try {
     isLoading.value = true
     errorMessage.value = ''
-    
-    // Call the login API
-    const credentials = {
+
+        const credentials = {
       email: email.value,
       password: password.value
     }
-    
+
     const response = await authService.login(credentials)
-    
-    // Handle successful login
-    if (response.user) {
-      // Set the user in the store
-      store.setUser(response.user)
-      
-      // Redirect to the original requested page or home
-      const redirectPath = route.query.redirect || '/'
+
+        if (response.user) {
+            store.setUser(response.user)
+
+            const redirectPath = route.query.redirect || '/'
       router.push(redirectPath)
     } else {
       errorMessage.value = response.message || 'Login failed. Please try again.'
@@ -61,38 +55,38 @@ async function login() {
     <div class="container">
       <div class="login-form">
         <h1>Login</h1>
-        
+
         <div v-if="errorMessage" class="error-message">
           {{ errorMessage }}
         </div>
-        
+
         <div class="form-group">
           <label for="email">Email Address</label>
-          <input 
-            type="email" 
-            id="email" 
-            v-model="email" 
+          <input
+            type="email"
+            id="email"
+            v-model="email"
             placeholder="Enter your email"
             @keyup.enter="login"
           >
         </div>
-        
+
         <div class="form-group">
           <label for="password">Password</label>
-          <input 
-            type="password" 
-            id="password" 
-            v-model="password" 
+          <input
+            type="password"
+            id="password"
+            v-model="password"
             placeholder="Enter your password"
             @keyup.enter="login"
           >
         </div>
-        
+
         <button class="login-button" @click="login" :disabled="isLoading">
           <span v-if="isLoading" class="loading-spinner-small"></span>
           <span v-else>Login</span>
         </button>
-        
+
         <div class="auth-links">
           <p>Don't have an account? <router-link to="/register">Register</router-link></p>
         </div>
@@ -228,15 +222,15 @@ async function login() {
     align-items: center;
     min-height: calc(100vh - 200px); /* Adjust based on header/footer height */
   }
-  
+
   .container {
     max-width: 480px;
   }
-  
+
   .login-form {
     padding: 40px;
   }
-  
+
   .login-form h1 {
     font-size: 32px;
   }
@@ -247,7 +241,7 @@ async function login() {
   .login {
     padding: 50px 0;
   }
-  
+
   .container {
     max-width: 500px;
   }
@@ -258,32 +252,32 @@ async function login() {
   .login {
     padding: 30px 0;
   }
-  
+
   .container {
     padding: 0 15px;
   }
-  
+
   .login-form {
     padding: 25px 20px;
   }
-  
+
   .login-form h1 {
     font-size: 24px;
     margin-bottom: 20px;
   }
-  
+
   .form-group {
     margin-bottom: 20px;
   }
-  
+
   .form-group label {
     font-size: 14px;
   }
-  
+
   .form-group input {
     padding: 10px 12px;
   }
-  
+
   .login-button {
     padding: 12px;
     font-size: 15px;

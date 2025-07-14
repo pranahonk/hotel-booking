@@ -20,27 +20,22 @@ const nights = computed(() => {
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 })
 
-// Function to fetch rooms that can be called for initial load or retry
 async function fetchRooms() {
   try {
     loading.value = true
     error.value = null
 
-    // Use the fetchRooms method with filters for check-in, check-out and capacity
-    const filters = {
+        const filters = {
       checkIn: bookingData.value.checkIn,
       checkOut: bookingData.value.checkOut,
       capacity: bookingData.value.guests
     }
 
-    // Fetch rooms using the store method
-    rooms.value = await store.fetchRooms(filters)
+        rooms.value = await store.fetchRooms(filters)
 
-    // Filter rooms that match our capacity requirements
-    rooms.value = rooms.value.filter(room =>
+        rooms.value = rooms.value.filter(room =>
       room.capacity >= bookingData.value.guests &&
-      (room.available !== false) // Only show available rooms
-    )
+      (room.available !== false)     )
 
     sortRooms()
   } catch (err) {
@@ -52,14 +47,12 @@ async function fetchRooms() {
 }
 
 onMounted(async () => {
-  // Redirect to search page if no booking data
-  if (!bookingData.value.checkIn || !bookingData.value.checkOut) {
+    if (!bookingData.value.checkIn || !bookingData.value.checkOut) {
     router.push('/')
     return
   }
 
-  // Get available rooms
-  await fetchRooms()
+    await fetchRooms()
 })
 
 function sortRooms() {
@@ -76,9 +69,7 @@ function formatDate(dateString) {
 }
 
 function getImageUrl(imageName) {
-  // In a real app, this would use the actual image URL from the API
-  // For now, we'll return a placeholder
-  return imageName || 'placeholder.jpg'
+      return imageName || 'placeholder.jpg'
 }
 
 const isProcessing = ref(false)
@@ -91,20 +82,17 @@ function selectRoom(room) {
   })
   store.setSelectedRoomId(room.id || room._id)
 
-  // Check if user is authenticated
-  const isAuthenticated = authService.isAuthenticated()
+    const isAuthenticated = authService.isAuthenticated()
 
   if (!isAuthenticated) {
-    // If not authenticated, redirect to login page with return path
-    router.push({
+        router.push({
       path: '/login',
       query: { redirect: router.currentRoute.value.fullPath }
     })
     return
   }
 
-  // User is authenticated, navigate to contact information page
-  router.push('/contact-information')
+    router.push('/contact-information')
 }
 </script>
 

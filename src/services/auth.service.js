@@ -1,10 +1,7 @@
 import api from './api.js';
 
-// Authentication service
 const authService = {
-  // Register a new user
-  // Example: { "name": "John Doe", "email": "john@example.com", "password": "password123" }
-  async register(userData) {
+      async register(userData) {
     const response = await api.post('/auth/register', userData);
     if (response.token) {
       api.setToken(response.token);

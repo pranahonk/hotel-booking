@@ -1,9 +1,7 @@
 import api from './api.js';
 
-// Booking service
 const bookingService = {
-  // Create a new booking
-  async createBooking(bookingData) {
+    async createBooking(bookingData) {
     return await api.post('/bookings', bookingData);
   },
 
@@ -21,7 +19,7 @@ const bookingService = {
   async cancelBooking(bookingId) {
     return await api.patch(`/bookings/${bookingId}/cancel`);
   },
-  
+
   // Get available rooms for booking based on date range
   async getAvailableRooms(checkInDate, checkOutDate) {
     return await api.get(`/rooms/available?checkIn=${checkInDate}&checkOut=${checkOutDate}`);

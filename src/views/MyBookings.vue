@@ -37,8 +37,7 @@ async function cancelBooking(bookingId) {
   try {
     loading.value = true
     await bookingService.cancelBooking(bookingId)
-    // Refresh the bookings list
-    const response = await bookingService.getMyBookings()
+        const response = await bookingService.getMyBookings()
     console.log('My bookings after cancel:', response)
     if (response && response.data && response.data.bookings) {
       bookings.value = response.data.bookings

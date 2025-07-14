@@ -11,8 +11,7 @@ const latestBooking = computed(() => {
 })
 
 onMounted(() => {
-  // Redirect if no bookings
-  if (bookings.value.length === 0) {
+    if (bookings.value.length === 0) {
     router.push('/')
     return
   }
@@ -20,16 +19,15 @@ onMounted(() => {
 
 function formatDate(dateString) {
   const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', { 
-    month: 'short', 
-    day: 'numeric', 
-    year: 'numeric' 
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
   })
 }
 
 function returnToHome() {
-  // Reset booking data and return to home
-  store.resetBookingData()
+    store.resetBookingData()
   router.push('/')
 }
 </script>
@@ -55,7 +53,7 @@ function returnToHome() {
           <span class="step-text">CONFIRMATION</span>
         </div>
       </div>
-      
+
       <div class="confirmation-message">
         <h1>YOUR BOOKING HAS BEEN CONFIRMED</h1>
         <p>We have sent your booking confirmation to the email address that you have provided.</p>
@@ -65,7 +63,7 @@ function returnToHome() {
           Total Price: ${{ latestBooking.price.total.toFixed(2) }}
         </p>
       </div>
-      
+
       <div class="confirmation-details">
         <div class="room-details">
           <div class="room-image">
@@ -74,7 +72,7 @@ function returnToHome() {
           <div class="room-info">
             <h3>ROOM: {{ latestBooking.room.title }}</h3>
             <p>{{ latestBooking.guests }} Guest</p>
-            
+
             <h4>PACKAGE:</h4>
             <div class="price-breakdown">
               <div class="price-item">
@@ -92,7 +90,7 @@ function returnToHome() {
             </div>
           </div>
         </div>
-        
+
         <div class="guest-details">
           <h3>GUEST DETAILS</h3>
           <div class="guest-info">
@@ -107,7 +105,7 @@ function returnToHome() {
           </div>
         </div>
       </div>
-      
+
       <div class="actions">
         <button class="home-button" @click="returnToHome">RETURN TO HOME</button>
       </div>
@@ -347,27 +345,27 @@ function returnToHome() {
   .confirmation {
     padding: 60px 0;
   }
-  
+
   .confirmation-message {
     padding: 40px;
   }
-  
+
   .confirmation-message h2 {
     font-size: 32px;
   }
-  
+
   .content-wrapper {
     gap: 40px;
   }
-  
+
   .booking-details {
     padding: 40px;
   }
-  
+
   .booking-details h3 {
     font-size: 22px;
   }
-  
+
   .image-placeholder {
     height: 230px;
   }
@@ -378,11 +376,11 @@ function returnToHome() {
   .content-wrapper {
     gap: 25px;
   }
-  
+
   .booking-details {
     padding: 25px;
   }
-  
+
   .confirmation-message {
     padding: 25px;
   }
@@ -393,62 +391,62 @@ function returnToHome() {
   .confirmation {
     padding: 30px 0;
   }
-  
+
   .breadcrumbs {
     padding: 10px;
   }
-  
+
   .step-number {
     width: 24px;
     height: 24px;
     font-size: 12px;
     margin-right: 6px;
   }
-  
+
   .step-text {
     font-size: 11px;
   }
-  
+
   .confirmation-message {
     padding: 20px;
     margin-bottom: 30px;
   }
-  
+
   .confirmation-message h2 {
     font-size: 22px;
   }
-  
+
   .confirmation-message p {
     font-size: 16px;
   }
-  
+
   .confirmation-number {
     font-size: 18px;
   }
-  
+
   .content-wrapper {
     flex-direction: column;
     gap: 25px;
   }
-  
+
   .booking-details {
     width: 100%;
     padding: 20px;
   }
-  
+
   .booking-details h3 {
     font-size: 18px;
     margin-bottom: 20px;
   }
-  
+
   .detail-group {
     margin-bottom: 20px;
   }
-  
+
   .image-placeholder {
     height: 180px;
   }
-  
+
   .home-button {
     width: 100%;
     padding: 12px;

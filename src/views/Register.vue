@@ -13,47 +13,42 @@ const errorMessage = ref('')
 const isLoading = ref(false)
 
 async function register() {
-  // Basic validation
-  if (!name.value || !email.value || !password.value || !confirmPassword.value) {
+    if (!name.value || !email.value || !password.value || !confirmPassword.value) {
     errorMessage.value = 'Please fill in all fields'
     return
   }
-  
+
   if (!email.value.includes('@')) {
     errorMessage.value = 'Please enter a valid email address'
     return
   }
-  
+
   if (password.value !== confirmPassword.value) {
     errorMessage.value = 'Passwords do not match'
     return
   }
-  
+
   if (password.value.length < 6) {
     errorMessage.value = 'Password must be at least 6 characters'
     return
   }
-  
+
   try {
     isLoading.value = true
     errorMessage.value = ''
-    
-    // Call the register API
-    const userData = {
+
+        const userData = {
       name: name.value,
       email: email.value,
       password: password.value
     }
-    
+
     const response = await authService.register(userData)
-    
-    // Handle successful registration
-    if (response.user) {
-      // Set the user in the store
-      store.setUser(response.user)
-      
-      // Redirect to home
-      router.push('/')
+
+        if (response.user) {
+            store.setUser(response.user)
+
+            router.push('/')
     } else {
       errorMessage.value = response.message || 'Registration failed. Please try again.'
     }
@@ -71,56 +66,56 @@ async function register() {
     <div class="container">
       <div class="register-form">
         <h1>Register</h1>
-        
+
         <div v-if="errorMessage" class="error-message">
           {{ errorMessage }}
         </div>
-        
+
         <div class="form-group">
           <label for="name">Full Name</label>
-          <input 
-            type="text" 
-            id="name" 
-            v-model="name" 
+          <input
+            type="text"
+            id="name"
+            v-model="name"
             placeholder="Enter your full name"
           >
         </div>
-        
+
         <div class="form-group">
           <label for="email">Email Address</label>
-          <input 
-            type="email" 
-            id="email" 
-            v-model="email" 
+          <input
+            type="email"
+            id="email"
+            v-model="email"
             placeholder="Enter your email"
           >
         </div>
-        
+
         <div class="form-group">
           <label for="password">Password</label>
-          <input 
-            type="password" 
-            id="password" 
-            v-model="password" 
+          <input
+            type="password"
+            id="password"
+            v-model="password"
             placeholder="Enter your password"
           >
         </div>
-        
+
         <div class="form-group">
           <label for="confirm-password">Confirm Password</label>
-          <input 
-            type="password" 
-            id="confirm-password" 
-            v-model="confirmPassword" 
+          <input
+            type="password"
+            id="confirm-password"
+            v-model="confirmPassword"
             placeholder="Confirm your password"
           >
         </div>
-        
+
         <button class="register-button" @click="register" :disabled="isLoading">
           <span v-if="isLoading" class="loading-spinner-small"></span>
           <span v-else>Register</span>
         </button>
-        
+
         <div class="auth-links">
           <p>Already have an account? <router-link to="/login">Login</router-link></p>
         </div>
@@ -256,15 +251,15 @@ async function register() {
     align-items: center;
     min-height: calc(100vh - 200px); /* Adjust based on header/footer height */
   }
-  
+
   .container {
     max-width: 480px;
   }
-  
+
   .register-form {
     padding: 40px;
   }
-  
+
   .register-form h1 {
     font-size: 32px;
   }
@@ -275,7 +270,7 @@ async function register() {
   .register {
     padding: 50px 0;
   }
-  
+
   .container {
     max-width: 500px;
   }
@@ -286,32 +281,32 @@ async function register() {
   .register {
     padding: 30px 0;
   }
-  
+
   .container {
     padding: 0 15px;
   }
-  
+
   .register-form {
     padding: 25px 20px;
   }
-  
+
   .register-form h1 {
     font-size: 24px;
     margin-bottom: 20px;
   }
-  
+
   .form-group {
     margin-bottom: 20px;
   }
-  
+
   .form-group label {
     font-size: 14px;
   }
-  
+
   .form-group input {
     padding: 10px 12px;
   }
-  
+
   .register-button {
     padding: 12px;
     font-size: 15px;

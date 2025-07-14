@@ -8,7 +8,6 @@ const user = computed(() => store.state.user)
 const bookings = computed(() => store.state.bookings)
 const activeTab = ref('upcoming')
 
-// Filter bookings by date
 const currentDate = new Date()
 const upcomingBookings = computed(() => {
   return bookings.value.filter(booking => {
@@ -26,10 +25,10 @@ const pastBookings = computed(() => {
 
 function formatDate(dateString) {
   const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', { 
-    month: 'short', 
-    day: 'numeric', 
-    year: 'numeric' 
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
   })
 }
 
@@ -44,22 +43,22 @@ function cancelBooking(bookingId) {
   <div class="dashboard">
     <div class="container">
       <h1>My Dashboard</h1>
-      
+
       <div class="tabs">
-        <button 
+        <button
           :class="['tab-button', { active: activeTab === 'upcoming' }]"
           @click="activeTab = 'upcoming'"
         >
           Upcoming Bookings
         </button>
-        <button 
+        <button
           :class="['tab-button', { active: activeTab === 'past' }]"
           @click="activeTab = 'past'"
         >
           Past Bookings
         </button>
       </div>
-      
+
       <div class="tab-content">
         <!-- Upcoming Bookings -->
         <div v-if="activeTab === 'upcoming'" class="bookings-list">
@@ -67,7 +66,7 @@ function cancelBooking(bookingId) {
             <p>You have no upcoming bookings.</p>
             <router-link to="/" class="book-now-button">Book Now</router-link>
           </div>
-          
+
           <div v-else class="booking-cards">
             <div v-for="booking in upcomingBookings" :key="booking.id" class="booking-card">
               <div class="booking-image">
@@ -87,13 +86,13 @@ function cancelBooking(bookingId) {
             </div>
           </div>
         </div>
-        
+
         <!-- Past Bookings -->
         <div v-if="activeTab === 'past'" class="bookings-list">
           <div v-if="pastBookings.length === 0" class="no-bookings">
             <p>You have no past bookings.</p>
           </div>
-          
+
           <div v-else class="booking-cards">
             <div v-for="booking in pastBookings" :key="booking.id" class="booking-card">
               <div class="booking-image">
@@ -264,23 +263,23 @@ h1 {
   .dashboard {
     padding: 60px 0;
   }
-  
+
   .dashboard-header {
     padding: 40px;
   }
-  
+
   .dashboard-header h1 {
     font-size: 32px;
   }
-  
+
   .booking-card {
     padding: 30px;
   }
-  
+
   .booking-image {
     flex: 0 0 250px;
   }
-  
+
   .image-placeholder {
     height: 160px;
   }
@@ -291,11 +290,11 @@ h1 {
   .booking-image {
     flex: 0 0 200px;
   }
-  
+
   .image-placeholder {
     height: 120px;
   }
-  
+
   .booking-card {
     padding: 20px;
   }
@@ -306,58 +305,58 @@ h1 {
   .dashboard {
     padding: 30px 0;
   }
-  
+
   .dashboard-header {
     padding: 20px;
     margin-bottom: 30px;
   }
-  
+
   .dashboard-header h1 {
     font-size: 24px;
     margin-bottom: 10px;
   }
-  
+
   .dashboard-header p {
     font-size: 15px;
   }
-  
+
   .tabs {
     margin-bottom: 20px;
   }
-  
+
   .tab {
     padding: 10px 15px;
     font-size: 14px;
   }
-  
+
   .booking-card {
     flex-direction: column;
     padding: 15px;
   }
-  
+
   .booking-image {
     margin-right: 0;
     margin-bottom: 20px;
     width: 100%;
   }
-  
+
   .booking-info h3 {
     font-size: 18px;
   }
-  
+
   .booking-price {
     margin-bottom: 15px;
   }
-  
+
   .booking-actions {
     justify-content: flex-start;
   }
-  
+
   .cancel-button {
     width: 100%;
     text-align: center;
   }
-  
+
   .no-bookings {
     padding: 40px 0;
   }

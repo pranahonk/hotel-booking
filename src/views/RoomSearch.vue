@@ -16,7 +16,6 @@ const rooms = ref([])
 const selectedRoomId = ref('')
 const showRooms = ref(false)
 
-// Computed property to check if the search form is valid
 const isFormValid = computed(() => {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -34,16 +33,14 @@ const isFormValid = computed(() => {
 })
 
 onMounted(() => {
-  // Set default dates (today and tomorrow)
-  const today = new Date()
+    const today = new Date()
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
 
   checkIn.value = formatDate(today)
   checkOut.value = formatDate(tomorrow)
 
-  // If we have stored booking data, use it
-  const bookingData = store.state.bookingData
+    const bookingData = store.state.bookingData
   if (bookingData.checkIn) checkIn.value = bookingData.checkIn
   if (bookingData.checkOut) checkOut.value = bookingData.checkOut
   if (bookingData.guests) guests.value = bookingData.guests
@@ -59,7 +56,6 @@ function formatDate(date) {
 import authService from '../services/auth.service.js'
 import bookingService from '../services/booking.service.js'
 
-// Function to search for available rooms
 async function searchRooms() {
   if (!isFormValid.value) {
     searchError.value = 'Please check your dates and guest count'
@@ -70,8 +66,7 @@ async function searchRooms() {
   loadingRooms.value = true
 
   try {
-    // Update booking data in store
-    const bookingData = {
+        const bookingData = {
       checkIn: checkIn.value,
       checkOut: checkOut.value,
       guests: guests.value
@@ -79,15 +74,12 @@ async function searchRooms() {
 
     store.updateBookingData(bookingData)
 
-    // Use the store's getAvailableRooms method to fetch available rooms
-    const availableRooms = await store.getAvailableRooms(checkIn.value, checkOut.value)
+        const availableRooms = await store.getAvailableRooms(checkIn.value, checkOut.value)
 
     if (availableRooms && availableRooms.length > 0) {
-      // Store the rooms in the store
-      store.state.rooms = availableRooms
+            store.state.rooms = availableRooms
 
-      // Navigate to room selection page
-      router.push('/select-room')
+            router.push('/select-room')
     } else {
       rooms.value = []
       searchError.value = 'No rooms found. Please try different dates or guest count.'
@@ -101,14 +93,11 @@ async function searchRooms() {
   }
 }
 
-// Function to select a room
 function selectRoom(roomId) {
   selectedRoomId.value = roomId
-  // Store the selected room ID in the store
-  store.commit('setSelectedRoomId', roomId)
+    store.commit('setSelectedRoomId', roomId)
 }
 
-// Function to proceed with booking
 async function proceed() {
   if (!selectedRoomId.value) {
     searchError.value = 'Please select a room first'
@@ -119,24 +108,20 @@ async function proceed() {
   isSearching.value = true
 
   try {
-    // Check if user is authenticated
-    const isAuthenticated = authService.isAuthenticated()
+        const isAuthenticated = authService.isAuthenticated()
 
     if (!isAuthenticated) {
-      // If not authenticated, redirect to login page with return path
-      router.push({
+            router.push({
         path: '/login',
         query: { redirect: router.currentRoute.value.fullPath }
       })
       return
     }
 
-    // User is authenticated, proceed with booking API call
-    try {
+        try {
       const user = store.state.user
 
-      // Create booking data object according to API requirements
-      const bookingData = {
+            const bookingData = {
         room: selectedRoomId.value,
         checkIn: checkIn.value,
         checkOut: checkOut.value,
@@ -150,16 +135,12 @@ async function proceed() {
 
       console.log('Sending booking data:', bookingData)
 
-      // Send POST request to /bookings
-      const response = await api.post('/bookings', bookingData)
+            const response = await api.post('/bookings', bookingData)
 
-      // Handle successful booking
-      if (response && response.data) {
-        // Show success message
-        alert('Booking created successfully!')
+            if (response && response.data) {
+                alert('Booking created successfully!')
 
-        // Navigate to booking details page
-        router.push(`/bookings/${response.data._id || response.data.id}`)
+                router.push(`/bookings/${response.data._id || response.data.id}`)
       }
     } catch (bookingErr) {
       searchError.value = bookingErr.message || 'Failed to create booking. Please try again.'

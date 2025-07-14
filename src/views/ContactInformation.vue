@@ -11,7 +11,6 @@ const email = ref('')
 const bookingData = computed(() => store.state.bookingData)
 const user = computed(() => store.state.user)
 
-// Calculate nights
 const checkInDate = computed(() => new Date(bookingData.value.checkIn))
 const checkOutDate = computed(() => new Date(bookingData.value.checkOut))
 const nights = computed(() => {
@@ -20,27 +19,22 @@ const nights = computed(() => {
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 })
 
-// Calculate total price
 const roomPrice = computed(() => bookingData.value.selectedRoom?.price || 0)
-const taxRate = 0.09 // 9%
-const taxAmount = computed(() => roomPrice.value * taxRate)
+const taxRate = 0.09 const taxAmount = computed(() => roomPrice.value * taxRate)
 const totalPrice = computed(() => roomPrice.value + taxAmount.value)
 
 onMounted(() => {
-  // Redirect if no room selected
-  if (!bookingData.value.selectedRoom) {
+    if (!bookingData.value.selectedRoom) {
     router.push('/select-room')
     return
   }
 
-  // Pre-fill form if user is logged in
-  if (user.value) {
+    if (user.value) {
     name.value = user.value.name
     email.value = user.value.email
   }
 
-  // Pre-fill form if contact info exists
-  if (bookingData.value.contactInfo) {
+    if (bookingData.value.contactInfo) {
     title.value = bookingData.value.contactInfo.title
     name.value = bookingData.value.contactInfo.name
     email.value = bookingData.value.contactInfo.email
@@ -60,8 +54,7 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 
 async function proceed() {
-  // Validate form
-  if (!name.value.trim() || !email.value.trim()) {
+    if (!name.value.trim() || !email.value.trim()) {
     alert('Please fill in all fields')
     return
   }

@@ -12,7 +12,6 @@ const allRooms = computed(() => store.state.rooms)
 const availableRooms = ref([])
 const loadingRooms = ref(false)
 
-// Room filtering
 const filters = ref({
   roomType: '',
   minPrice: '',
@@ -29,19 +28,19 @@ const roomTypes = computed(() => {
 
 const filteredRooms = computed(() => {
   let rooms = availableRooms.value.length ? availableRooms.value : allRooms.value
-  
+
   if (filters.value.roomType) {
     rooms = rooms.filter(room => room.type === filters.value.roomType)
   }
-  
+
   if (filters.value.minPrice) {
     rooms = rooms.filter(room => room.price >= Number(filters.value.minPrice))
   }
-  
+
   if (filters.value.maxPrice) {
     rooms = rooms.filter(room => room.price <= Number(filters.value.maxPrice))
   }
-  
+
   return rooms
 })
 
@@ -71,7 +70,6 @@ function resetFilters() {
   }
 }
 
-// Form data
 const bookingData = ref({
   room: '',
   checkIn: '',
@@ -84,10 +82,8 @@ const bookingData = ref({
   }
 })
 
-// Form validation
 const validationErrors = ref({})
 
-// Get all rooms
 async function fetchRooms() {
   if (allRooms.value.length === 0) {
     try {
@@ -99,51 +95,43 @@ async function fetchRooms() {
   }
 }
 
-// Check room availability based on selected dates
 async function checkAvailability() {
   const { checkIn, checkOut } = bookingData.value
-  
-  // Reset room selection when dates change
-  bookingData.value.room = ''
-  
-  // Only check availability if both dates are selected
-  if (!checkIn || !checkOut) {
+
+    bookingData.value.room = ''
+
+    if (!checkIn || !checkOut) {
     availableRooms.value = []
     return
   }
-  
-  // Validate dates
-  if (new Date(checkIn) >= new Date(checkOut)) {
+
+    if (new Date(checkIn) >= new Date(checkOut)) {
     validationErrors.value.checkOut = 'Check-out date must be after check-in date'
     availableRooms.value = []
     return
   }
-  
+
   try {
     loadingRooms.value = true
     validationErrors.value.checkIn = ''
     validationErrors.value.checkOut = ''
-    
-    // Call API to get available rooms for the selected dates
-    const response = await bookingService.getAvailableRooms(checkIn, checkOut)
-    
+
+        const response = await bookingService.getAvailableRooms(checkIn, checkOut)
+
     if (response && response.data) {
       availableRooms.value = response.data
     } else {
-      availableRooms.value = allRooms.value // Fallback to all rooms if API fails
-    }
+      availableRooms.value = allRooms.value     }
   } catch (err) {
     console.error('Failed to check room availability:', err)
-    // Fallback to all rooms if API fails
-    availableRooms.value = allRooms.value
+        availableRooms.value = allRooms.value
   } finally {
     loadingRooms.value = false
   }
 }
 
 async function createBooking() {
-  // Validate form
-  validationErrors.value = {}
+    validationErrors.value = {}
   let isValid = true
 
   if (!bookingData.value.room) {
@@ -193,8 +181,7 @@ async function createBooking() {
 
     if (response && response.data) {
       success.value = true
-      // Reset form
-      bookingData.value = {
+            bookingData.value = {
         room: '',
         checkIn: '',
         checkOut: '',
@@ -206,8 +193,7 @@ async function createBooking() {
         }
       }
 
-      // Redirect to booking details after a short delay
-      setTimeout(() => {
+            setTimeout(() => {
         router.push(`/my-bookings`)
       }, 2000)
     }
@@ -224,7 +210,6 @@ function validateEmail(email) {
   return re.test(email)
 }
 
-// Watch for date changes to check room availability
 watch(
   () => [bookingData.value.checkIn, bookingData.value.checkOut],
   () => {
@@ -232,7 +217,6 @@ watch(
   }
 )
 
-// Initialize component
 fetchRooms()
 </script>
 
@@ -258,7 +242,7 @@ fetchRooms()
       <form v-else @submit.prevent="createBooking" class="booking-form">
         <div class="form-section">
           <h2>Room Selection</h2>
-          
+
           <div v-if="bookingData.checkIn && bookingData.checkOut && !loadingRooms" class="filter-section">
             <h3>Filter Rooms</h3>
             <div class="filter-row">
@@ -269,17 +253,17 @@ fetchRooms()
                   <option v-for="type in roomTypes" :key="type" :value="type">{{ type }}</option>
                 </select>
               </div>
-              
+
               <div class="filter-group">
                 <label for="min-price">Min Price</label>
                 <input type="number" id="min-price" v-model="filters.minPrice" min="0" placeholder="Min $">
               </div>
-              
+
               <div class="filter-group">
                 <label for="max-price">Max Price</label>
                 <input type="number" id="max-price" v-model="filters.maxPrice" min="0" placeholder="Max $">
               </div>
-              
+
               <button type="button" @click="resetFilters" class="btn-reset">Reset Filters</button>
             </div>
           </div>
@@ -409,7 +393,7 @@ fetchRooms()
             </div>
           </div>
         </div>
-        
+
         <div class="form-actions">
           <button type="button" @click="router.push('/')" class="btn-secondary">Cancel</button>
           <button type="submit" class="btn-primary">Create Booking</button>
@@ -695,16 +679,16 @@ input:focus, select:focus {
   .title-group, .name-group {
     flex: 1;
   }
-  
+
   .filter-row {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .filter-group {
     width: 100%;
   }
-  
+
   .btn-reset {
     width: 100%;
     margin-top: 5px;

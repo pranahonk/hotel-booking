@@ -37,12 +37,11 @@ onMounted(async () => {
 async function cancelBooking() {
   if (!booking.value || !booking.value._id) return
   if (!confirm('Are you sure you want to cancel this booking?')) return
-  
+
   try {
     loading.value = true
     await bookingService.cancelBooking(booking.value._id)
-    // Refresh the booking data
-    const response = await bookingService.getBooking(booking.value._id)
+        const response = await bookingService.getBooking(booking.value._id)
     if (response && response.data) {
       booking.value = response.data
     }
@@ -57,10 +56,10 @@ async function cancelBooking() {
 function formatDate(dateString) {
   if (!dateString) return ''
   const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   })
 }
 
@@ -75,24 +74,24 @@ function goBack() {
       <button @click="goBack" class="back-button">
         ← Back to My Bookings
       </button>
-      
+
       <h1>Booking Details</h1>
-      
+
       <div v-if="loading" class="loading">
         <div class="spinner"></div>
         <p>Loading booking details...</p>
       </div>
-      
+
       <div v-else-if="error" class="error-message">
         {{ error }}
       </div>
-      
+
       <div v-else-if="booking" class="booking-info">
         <div class="booking-header">
           <h2>{{ booking.room?.name || 'Room' }}</h2>
           <span :class="['booking-status', booking.status?.toLowerCase()]">{{ booking.status }}</span>
         </div>
-        
+
         <div class="booking-section">
           <h3>Booking Information</h3>
           <div class="info-grid">
@@ -106,7 +105,7 @@ function goBack() {
             </div>
           </div>
         </div>
-        
+
         <div class="booking-section">
           <h3>Stay Information</h3>
           <div class="info-grid">
@@ -124,7 +123,7 @@ function goBack() {
             </div>
           </div>
         </div>
-        
+
         <div class="booking-section">
           <h3>Contact Information</h3>
           <div class="info-grid">
@@ -138,14 +137,14 @@ function goBack() {
             </div>
           </div>
         </div>
-        
+
         <div class="booking-section" v-if="booking.room">
           <h3>Room Details</h3>
           <div class="room-details">
-            <img 
-              v-if="booking.room.image" 
-              :src="booking.room.image" 
-              :alt="booking.room.name" 
+            <img
+              v-if="booking.room.image"
+              :src="booking.room.image"
+              :alt="booking.room.name"
               class="room-image"
             >
             <div class="room-info">
@@ -153,7 +152,7 @@ function goBack() {
               <p class="room-type">{{ booking.room.type }}</p>
               <p class="room-price">${{ booking.room.price }} / night</p>
               <p class="room-description">{{ booking.room.description }}</p>
-              
+
               <div v-if="booking.room.amenities && booking.room.amenities.length" class="room-amenities">
                 <h5>Amenities</h5>
                 <ul class="amenities-list">
@@ -165,7 +164,7 @@ function goBack() {
             </div>
           </div>
         </div>
-        
+
         <div class="booking-actions" v-if="booking.status === 'CONFIRMED'">
           <button @click="cancelBooking" class="btn-danger">Cancel Booking</button>
         </div>
@@ -399,11 +398,11 @@ h1 {
   .info-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .room-details {
     flex-direction: column;
   }
-  
+
   .room-image {
     width: 100%;
     height: 200px;

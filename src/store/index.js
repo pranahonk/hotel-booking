@@ -55,25 +55,22 @@ const methods = {
     try {
       state.loading = true
       state.error = null
-      
-      // Add capacity filter based on guests if available
-      if (state.bookingData.guests) {
+
+            if (state.bookingData.guests) {
         filters.capacity = state.bookingData.guests
       }
-      
+
       const response = await roomService.getRooms(filters)
-      
+
       if (response.status === 'success') {
         state.rooms = response.data.rooms.map(room => ({
           ...room,
-          id: room._id || room.id, // Ensure we have an id property
-          // Convert features array to longDescription if needed
-          longDescription: room.features ? room.features.join(', ') : room.description
+          id: room._id || room.id,                     longDescription: room.features ? room.features.join(', ') : room.description
         }))
       } else {
         state.error = 'Failed to fetch rooms'
       }
-      
+
       return state.rooms
     } catch (error) {
       console.error('Error fetching rooms:', error)
@@ -87,22 +84,18 @@ const methods = {
     try {
       state.loading = true
       state.error = null
-      
-      // Create filters for the API call
-      const filters = {
+
+            const filters = {
         checkIn: checkIn || state.bookingData.checkIn,
         checkOut: checkOut || state.bookingData.checkOut,
         capacity: state.bookingData.guests
       }
-      
-      // Fetch rooms with the filters
-      await this.fetchRooms(filters)
-      
-      // Return the filtered rooms
-      return state.rooms.filter(room => 
-        room.capacity >= state.bookingData.guests && 
-        (room.available !== false) // Only show available rooms
-      )
+
+            await this.fetchRooms(filters)
+
+            return state.rooms.filter(room =>
+        room.capacity >= state.bookingData.guests &&
+        (room.available !== false)       )
     } catch (error) {
       console.error('Error getting available rooms:', error)
       state.error = error.message || 'Failed to get available rooms'
