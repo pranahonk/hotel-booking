@@ -58,17 +58,6 @@ const authService = {
 
   isAuthenticated() {
     return api.isAuthenticated();
-  },
-  
-  async updateProfile(userData) {
-    const response = await api.put('/api/auth/profile', userData);
-    if (response.data && response.data.user) {
-      return {
-        status: response.status,
-        user: response.data.user
-      };
-    }
-    return response;
   }
 };
 

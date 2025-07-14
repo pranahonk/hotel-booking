@@ -135,7 +135,7 @@ onBeforeUnmount(() => {
                   role="menu"
                   aria-orientation="vertical"
                 >
-                  <router-link to="/profile" class="dropdown-item" @click="closeDropdown" role="menuitem">My Profile</router-link>
+
                   <router-link to="/my-bookings" class="dropdown-item" @click="closeDropdown" role="menuitem">My Bookings</router-link>
                   <a href="#" @click.prevent="logout" class="dropdown-item" role="menuitem">Logout</a>
                 </div>

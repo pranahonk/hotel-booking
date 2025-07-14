@@ -5,7 +5,6 @@ import ContactInformation from '../views/ContactInformation.vue'
 import Confirmation from '../views/Confirmation.vue'
 import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
-import Profile from '../views/Profile.vue'
 import MyBookings from '../views/MyBookings.vue'
 import BookingDetails from '../views/BookingDetails.vue'
 import CreateBooking from '../views/CreateBooking.vue'
@@ -44,12 +43,7 @@ const routes = [
     name: 'Register',
     component: Register
   },
-  {
-    path: '/profile',
-    name: 'Profile',
-    component: Profile,
-    meta: { requiresAuth: true }
-  },
+
   {
     path: '/my-bookings',
     name: 'MyBookings',
