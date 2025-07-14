@@ -20,7 +20,8 @@ const nights = computed(() => {
 })
 
 const roomPrice = computed(() => bookingData.value.selectedRoom?.price || 0)
-const taxRate = 0.09 const taxAmount = computed(() => roomPrice.value * taxRate)
+const taxRate = 0.09
+const taxAmount = computed(() => roomPrice.value * taxRate)
 const totalPrice = computed(() => roomPrice.value + taxAmount.value)
 
 onMounted(() => {
@@ -54,7 +55,8 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 
 async function proceed() {
-    if (!name.value.trim() || !email.value.trim()) {
+  // Validate form
+  if (!name.value.trim() || !email.value.trim()) {
     alert('Please fill in all fields')
     return
   }
