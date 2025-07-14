@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import store from '../store'
+import authService from '../services/auth.service.js'
 
 const router = useRouter()
 const name = ref('')
@@ -9,8 +10,9 @@ const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 const errorMessage = ref('')
+const isLoading = ref(false)
 
-function register() {
+async function register() {
   // Basic validation
   if (!name.value || !email.value || !password.value || !confirmPassword.value) {
     errorMessage.value = 'Please fill in all fields'
@@ -32,20 +34,35 @@ function register() {
     return
   }
   
-  // In a real app, this would make an API call to register the user
-  // For this demo, we'll simulate a successful registration
-  
-  // Create a user object
-  const user = {
-    name: name.value,
-    email: email.value,
+  try {
+    isLoading.value = true
+    errorMessage.value = ''
+    
+    // Call the register API
+    const userData = {
+      name: name.value,
+      email: email.value,
+      password: password.value
+    }
+    
+    const response = await authService.register(userData)
+    
+    // Handle successful registration
+    if (response.user) {
+      // Set the user in the store
+      store.setUser(response.user)
+      
+      // Redirect to home
+      router.push('/')
+    } else {
+      errorMessage.value = response.message || 'Registration failed. Please try again.'
+    }
+  } catch (error) {
+    console.error('Registration error:', error)
+    errorMessage.value = error.message || 'An error occurred during registration. Please try again.'
+  } finally {
+    isLoading.value = false
   }
-  
-  // Set the user in the store
-  store.setUser(user)
-  
-  // Redirect to home
-  router.push('/')
 }
 </script>
 
@@ -99,7 +116,10 @@ function register() {
           >
         </div>
         
-        <button class="register-button" @click="register">Register</button>
+        <button class="register-button" @click="register" :disabled="isLoading">
+          <span v-if="isLoading" class="loading-spinner-small"></span>
+          <span v-else>Register</span>
+        </button>
         
         <div class="auth-links">
           <p>Already have an account? <router-link to="/login">Login</router-link></p>
@@ -189,6 +209,26 @@ function register() {
 
 .register-button:active {
   transform: translateY(1px);
+}
+
+.loading-spinner-small {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s linear infinite;
+  margin-right: 5px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.register-button:disabled {
+  background-color: #999;
+  cursor: not-allowed;
 }
 
 .login-link {

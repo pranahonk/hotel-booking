@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import authService from '../services/auth.service.js'
 
 const routes = [
   {
@@ -14,12 +15,14 @@ const routes = [
   {
     path: '/contact-information',
     name: 'ContactInformation',
-    component: () => import('../views/ContactInformation.vue')
+    component: () => import('../views/ContactInformation.vue'),
+    meta: { requiresAuth: true }
   },
   {
     path: '/confirmation',
     name: 'Confirmation',
-    component: () => import('../views/Confirmation.vue')
+    component: () => import('../views/Confirmation.vue'),
+    meta: { requiresAuth: true }
   },
   {
     path: '/login',
@@ -30,6 +33,12 @@ const routes = [
     path: '/register',
     name: 'Register',
     component: () => import('../views/Register.vue')
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: () => import('../views/Profile.vue'),
+    meta: { requiresAuth: true }
   },
   {
     path: '/dashboard',
@@ -46,10 +55,14 @@ const router = createRouter({
 
 // Navigation guard to check for authentication
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('user') !== null
+  const isAuthenticated = authService.isAuthenticated()
   
   if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
-    next('/login')
+    // Redirect to login with return path
+    next({ 
+      path: '/login', 
+      query: { redirect: to.fullPath } 
+    })
   } else {
     next()
   }

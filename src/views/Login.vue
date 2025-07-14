@@ -1,38 +1,58 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import store from '../store'
+import authService from '../services/auth.service.js'
 
 const router = useRouter()
+const route = useRoute()
 const email = ref('')
 const password = ref('')
 const errorMessage = ref('')
+const isLoading = ref(false)
 
-function login() {
+async function login() {
   // Basic validation
   if (!email.value || !password.value) {
     errorMessage.value = 'Please enter both email and password'
     return
   }
   
-  // In a real app, this would make an API call to authenticate
-  // For this demo, we'll simulate a successful login if the email contains '@'
+  // Validate email format
   if (!email.value.includes('@')) {
     errorMessage.value = 'Please enter a valid email address'
     return
   }
   
-  // Create a user object
-  const user = {
-    email: email.value,
-    name: email.value.split('@')[0], // Extract name from email for demo
+  try {
+    isLoading.value = true
+    errorMessage.value = ''
+    
+    // Call the login API
+    const credentials = {
+      email: email.value,
+      password: password.value
+    }
+    
+    const response = await authService.login(credentials)
+    
+    // Handle successful login
+    if (response.user) {
+      // Set the user in the store
+      store.setUser(response.user)
+      
+      // Redirect to the original requested page or home
+      const redirectPath = route.query.redirect || '/'
+      router.push(redirectPath)
+    } else {
+      errorMessage.value = response.message || 'Login failed. Please try again.'
+    }
+  } catch (error) {
+    console.error('Login error:', error)
+    errorMessage.value = error.message || 'An error occurred during login. Please try again.'
+  } finally {
+    isLoading.value = false
   }
-  
-  // Set the user in the store
-  store.setUser(user)
-  
-  // Redirect to home or previous page
-  router.push('/')
 }
 </script>
 
@@ -68,7 +88,10 @@ function login() {
           >
         </div>
         
-        <button class="login-button" @click="login">Login</button>
+        <button class="login-button" @click="login" :disabled="isLoading">
+          <span v-if="isLoading" class="loading-spinner-small"></span>
+          <span v-else>Login</span>
+        </button>
         
         <div class="auth-links">
           <p>Don't have an account? <router-link to="/register">Register</router-link></p>
@@ -158,6 +181,26 @@ function login() {
 
 .login-button:active {
   transform: translateY(1px);
+}
+
+.loading-spinner-small {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s linear infinite;
+  margin-right: 5px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.login-button:disabled {
+  background-color: #999;
+  cursor: not-allowed;
 }
 
 .register-link {

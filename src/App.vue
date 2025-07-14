@@ -1,32 +1,10 @@
 <script setup>
-import { computed } from 'vue'
-import store from './store'
-
-const user = computed(() => store.state.user)
-
-function logout() {
-  store.logout()
-}
+import NavBar from './components/NavBar.vue'
 </script>
 
 <template>
   <div class="app">
-    <header class="masthead">
-      <div class="container">
-        <router-link to="/" class="logo">Hotel Booking</router-link>
-        <nav class="nav">
-          <template v-if="user">
-            <span class="welcome">Welcome, {{ user.name }}</span>
-            <router-link to="/dashboard" class="nav-link">Dashboard</router-link>
-            <a href="#" @click.prevent="logout" class="nav-link">Logout</a>
-          </template>
-          <template v-else>
-            <router-link to="/login" class="nav-link">Login</router-link>
-            <router-link to="/register" class="nav-link">Register</router-link>
-          </template>
-        </nav>
-      </div>
-    </header>
+    <NavBar />
 
     <main>
       <router-view></router-view>

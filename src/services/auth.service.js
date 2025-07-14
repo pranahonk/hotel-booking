@@ -2,35 +2,32 @@ import api from './api.js';
 
 // Authentication service
 const authService = {
-  // Register a new user
   async register(userData) {
-    const response = await api.post('/auth/register', userData);
-    if (response.status === 'success') {
+    const response = await api.post('/api/auth/register', userData);
+    if (response.token) {
       api.setToken(response.token);
     }
     return response;
   },
 
-  // Login user
+
   async login(credentials) {
-    const response = await api.post('/auth/login', credentials);
-    if (response.status === 'success') {
+    const response = await api.post('/api/auth/login', credentials);
+    if (response.token) {
       api.setToken(response.token);
     }
     return response;
   },
 
-  // Get current user profile
   async getCurrentUser() {
-    return await api.get('/auth/me');
+    return await api.get('/api/auth/me');
   },
 
-  // Logout user
   logout() {
     api.removeToken();
   },
 
-  // Check if user is authenticated
+
   isAuthenticated() {
     return api.isAuthenticated();
   }
