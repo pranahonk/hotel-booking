@@ -75,7 +75,6 @@ function viewBookingDetails(bookingId) {
   <div class="my-bookings">
     <div class="header-container">
       <h1>My Bookings</h1>
-      <router-link to="/create-booking" class="create-booking-btn">Create New Booking</router-link>
     </div>
 
     <div v-if="loading" class="loading">

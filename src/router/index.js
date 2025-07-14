@@ -7,7 +7,7 @@ import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
 import MyBookings from '../views/MyBookings.vue'
 import BookingDetails from '../views/BookingDetails.vue'
-import CreateBooking from '../views/CreateBooking.vue'
+// CreateBooking feature removed
 import authService from '../services/auth.service.js'
 
 const routes = [
@@ -60,12 +60,7 @@ const routes = [
     component: BookingDetails,
     meta: { requiresAuth: true }
   },
-  {
-    path: '/create-booking',
-    name: 'CreateBooking',
-    component: CreateBooking,
-    meta: { requiresAuth: true }
-  }
+  // CreateBooking route removed
 ]
 
 const router = createRouter({
