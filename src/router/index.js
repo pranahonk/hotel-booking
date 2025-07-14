@@ -57,6 +57,10 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/bookings/my-bookings',
+    redirect: '/my-bookings'
+  },
+  {
     path: '/bookings/:id',
     name: 'BookingDetails',
     component: BookingDetails,

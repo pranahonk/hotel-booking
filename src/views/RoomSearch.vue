@@ -150,8 +150,8 @@ async function proceed() {
 
       console.log('Sending booking data:', bookingData)
 
-      // Send POST request to /api/bookings
-      const response = await api.post('/api/bookings', bookingData)
+      // Send POST request to /bookings
+      const response = await api.post('/bookings', bookingData)
 
       // Handle successful booking
       if (response && response.data) {

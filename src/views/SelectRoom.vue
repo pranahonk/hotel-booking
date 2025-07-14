@@ -84,8 +84,8 @@ function getImageUrl(imageName) {
 const isProcessing = ref(false)
 const bookingError = ref(null)
 
-async function selectRoom(room) {
-  // Store the selected room
+function selectRoom(room) {
+  console.log(room)
   store.updateBookingData({
     selectedRoom: room
   })
@@ -103,45 +103,8 @@ async function selectRoom(room) {
     return
   }
 
-  // User is authenticated, proceed with booking API call
-  try {
-    isProcessing.value = true
-    bookingError.value = null
-
-    const user = store.state.user
-
-    // Create booking data object according to API requirements
-    const bookingPayload = {
-      room: room.id || room._id,
-      checkIn: bookingData.value.checkIn,
-      checkOut: bookingData.value.checkOut,
-      guests: parseInt(bookingData.value.guests),
-      contactInfo: {
-        title: user?.title || 'Mr',
-        name: user?.name || '',
-        email: user?.email || ''
-      }
-    }
-
-    console.log('Sending booking data:', bookingPayload)
-
-    // Send POST request to /api/bookings
-    const response = await api.post('/api/bookings', bookingPayload)
-
-    // Handle successful booking
-    if (response && response.data) {
-      // Show success message
-      alert('Booking created successfully!')
-
-      // Navigate to booking details page
-      router.push(`/bookings/${response.data._id || response.data.id}`)
-    }
-  } catch (err) {
-    bookingError.value = err.message || 'Failed to create booking. Please try again.'
-    console.error('Error creating booking:', err)
-  } finally {
-    isProcessing.value = false
-  }
+  // User is authenticated, navigate to contact information page
+  router.push('/contact-information')
 }
 </script>
 

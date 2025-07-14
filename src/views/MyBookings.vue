@@ -13,7 +13,12 @@ onMounted(async () => {
     loading.value = true
     error.value = null
     const response = await bookingService.getMyBookings()
-    if (response && response.data) {
+    console.log('My bookings response:', response)
+    if (response && response.data && response.data.bookings) {
+      bookings.value = response.data.bookings
+    } else if (response && Array.isArray(response)) {
+      bookings.value = response
+    } else if (response && Array.isArray(response.data)) {
       bookings.value = response.data
     } else {
       bookings.value = []
@@ -28,14 +33,21 @@ onMounted(async () => {
 
 async function cancelBooking(bookingId) {
   if (!confirm('Are you sure you want to cancel this booking?')) return
-  
+
   try {
     loading.value = true
     await bookingService.cancelBooking(bookingId)
     // Refresh the bookings list
     const response = await bookingService.getMyBookings()
-    if (response && response.data) {
+    console.log('My bookings after cancel:', response)
+    if (response && response.data && response.data.bookings) {
+      bookings.value = response.data.bookings
+    } else if (response && Array.isArray(response)) {
+      bookings.value = response
+    } else if (response && Array.isArray(response.data)) {
       bookings.value = response.data
+    } else {
+      bookings.value = []
     }
   } catch (err) {
     console.error('Failed to cancel booking:', err)
@@ -48,10 +60,10 @@ async function cancelBooking(bookingId) {
 function formatDate(dateString) {
   if (!dateString) return ''
   const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   })
 }
 
@@ -66,28 +78,28 @@ function viewBookingDetails(bookingId) {
       <h1>My Bookings</h1>
       <router-link to="/create-booking" class="create-booking-btn">Create New Booking</router-link>
     </div>
-    
+
     <div v-if="loading" class="loading">
       <div class="spinner"></div>
       <p>Loading your bookings...</p>
     </div>
-    
+
     <div v-else-if="error" class="error-message">
       {{ error }}
     </div>
-    
+
     <div v-else-if="bookings.length === 0" class="no-bookings">
       <p>You don't have any bookings yet.</p>
       <router-link to="/" class="btn-primary">Book a Room</router-link>
     </div>
-    
+
     <div v-else class="bookings-list">
       <div v-for="booking in bookings" :key="booking._id" class="booking-card">
         <div class="booking-header">
           <h3>{{ booking.room.name || 'Room' }}</h3>
           <span :class="['booking-status', booking.status.toLowerCase()]">{{ booking.status }}</span>
         </div>
-        
+
         <div class="booking-dates">
           <div class="date-group">
             <span class="date-label">Check-in</span>
@@ -99,18 +111,18 @@ function viewBookingDetails(bookingId) {
             <span class="date">{{ formatDate(booking.checkOut) }}</span>
           </div>
         </div>
-        
+
         <div class="booking-details">
           <p><strong>Guests:</strong> {{ booking.guests }}</p>
           <p><strong>Contact:</strong> {{ booking.contactInfo.name }}</p>
           <p><strong>Email:</strong> {{ booking.contactInfo.email }}</p>
         </div>
-        
+
         <div class="booking-actions">
           <button @click="viewBookingDetails(booking._id)" class="btn-secondary">View Details</button>
-          <button 
-            v-if="booking.status === 'CONFIRMED'" 
-            @click="cancelBooking(booking._id)" 
+          <button
+            v-if="booking.status === 'CONFIRMED'"
+            @click="cancelBooking(booking._id)"
             class="btn-danger"
           >
             Cancel Booking
@@ -340,25 +352,25 @@ h1 {
   .bookings-list {
     grid-template-columns: 1fr;
   }
-  
+
   .booking-dates {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .date-divider {
     display: none;
   }
-  
+
   .date-group {
     margin-bottom: 10px;
   }
-  
+
   .booking-actions {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .btn-primary,
   .btn-secondary,
   .btn-danger {

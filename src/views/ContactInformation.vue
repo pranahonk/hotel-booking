@@ -1,7 +1,8 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import {computed, onMounted, ref} from 'vue'
+import {useRouter} from 'vue-router'
 import store from '../store'
+import bookingService from '../services/booking.service.js'
 
 const router = useRouter()
 const title = ref('Mr.')
@@ -31,13 +32,13 @@ onMounted(() => {
     router.push('/select-room')
     return
   }
-  
+
   // Pre-fill form if user is logged in
   if (user.value) {
     name.value = user.value.name
     email.value = user.value.email
   }
-  
+
   // Pre-fill form if contact info exists
   if (bookingData.value.contactInfo) {
     title.value = bookingData.value.contactInfo.title
@@ -48,21 +49,24 @@ onMounted(() => {
 
 function formatDate(dateString) {
   const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', { 
-    month: 'short', 
-    day: 'numeric', 
-    year: 'numeric' 
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
   })
 }
 
-function proceed() {
+const isLoading = ref(false)
+const errorMessage = ref('')
+
+async function proceed() {
   // Validate form
   if (!name.value.trim() || !email.value.trim()) {
     alert('Please fill in all fields')
     return
   }
-  
-  // Update booking data
+
+  // Update booking data with contact info
   store.updateBookingData({
     contactInfo: {
       title: title.value,
@@ -70,35 +74,37 @@ function proceed() {
       email: email.value
     }
   })
-  
-  // Generate a random booking ID
-  const bookingId = 'RES' + Math.floor(Math.random() * 1000000000)
-  
-  // Create booking object
-  const booking = {
-    id: bookingId,
+
+  // Create booking payload
+  const bookingPayload = {
+    roomId: bookingData.value.selectedRoom.id,
     checkIn: bookingData.value.checkIn,
     checkOut: bookingData.value.checkOut,
     guests: bookingData.value.guests,
-    room: bookingData.value.selectedRoom,
     contactInfo: {
       title: title.value,
       name: name.value,
       email: email.value
-    },
-    price: {
-      room: roomPrice.value,
-      tax: taxAmount.value,
-      total: totalPrice.value
-    },
-    createdAt: new Date().toISOString()
+    }
   }
-  
-  // Add booking to store
-  store.addBooking(booking)
-  
-  // Navigate to confirmation page
-  router.push('/confirmation')
+
+  isLoading.value = true
+  errorMessage.value = ''
+
+  try {
+    const response = await bookingService.createBooking(bookingPayload)
+
+    // Add booking to store
+    store.addBooking(response)
+
+    // Navigate to my bookings page
+    router.push('/my-bookings')
+  } catch (error) {
+    console.error('Booking creation error:', error)
+    errorMessage.value = error.message || 'An error occurred while creating your booking'
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>
 
@@ -123,11 +129,11 @@ function proceed() {
           <span class="step-text">CONFIRMATION</span>
         </div>
       </div>
-      
+
       <div class="content-wrapper">
         <div class="contact-form">
           <h2>CONTACT INFORMATION</h2>
-          
+
           <div class="form-group">
             <label for="title">Title</label>
             <select id="title" v-model="title">
@@ -137,31 +143,34 @@ function proceed() {
               <option>Dr.</option>
             </select>
           </div>
-          
+
           <div class="form-group">
             <label for="name">Name</label>
             <input type="text" id="name" v-model="name" placeholder="Enter your name">
           </div>
-          
+
           <div class="form-group">
             <label for="email">Email Address</label>
             <input type="email" id="email" v-model="email" placeholder="Enter your email">
           </div>
-          
-          <button class="proceed-button" @click="proceed">PROCEED</button>
+
+          <div class="error-message" v-if="errorMessage">{{ errorMessage }}</div>
+          <button class="book-button" @click="proceed" :disabled="isLoading">
+            <span>PROCEED</span>
+          </button>
         </div>
-        
+
         <div class="booking-summary">
           <div class="booking-dates">
             <p>{{ formatDate(bookingData.checkIn) }} → {{ formatDate(bookingData.checkOut) }}</p>
             <p>{{ nights }} NIGHT</p>
             <h3>ROOM: {{ bookingData.guests }} GUEST</h3>
           </div>
-          
+
           <div class="room-image">
             <div class="image-placeholder">340 × 210</div>
           </div>
-          
+
           <div class="room-details">
             <h3>{{ bookingData.selectedRoom?.title }}</h3>
             <div class="price-breakdown">
@@ -282,7 +291,7 @@ function proceed() {
   outline: none;
 }
 
-.proceed-button {
+.book-button {
   background-color: #000;
   color: #fff;
   padding: 12px 25px;
@@ -293,10 +302,30 @@ function proceed() {
   margin-top: 15px;
   border-radius: 4px;
   transition: background-color 0.3s ease;
+  width: 100%;
+  text-align: center;
 }
 
-.proceed-button:hover {
+.book-button:hover {
   background-color: #333;
+}
+
+.book-button:disabled {
+  background-color: #999;
+  cursor: not-allowed;
+}
+
+.book-button span {
+  font-weight: bold;
+}
+
+.error-message {
+  color: #e53935;
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: rgba(229, 57, 53, 0.1);
+  border-radius: 4px;
+  font-size: 14px;
 }
 
 .booking-summary {
@@ -369,20 +398,20 @@ function proceed() {
   .contact-information {
     padding: 60px 0;
   }
-  
+
   .content-wrapper {
     gap: 40px;
   }
-  
+
   .contact-form,
   .booking-summary {
     padding: 40px;
   }
-  
+
   .contact-form h2 {
     font-size: 22px;
   }
-  
+
   .image-placeholder {
     height: 230px;
   }
@@ -393,7 +422,7 @@ function proceed() {
   .content-wrapper {
     gap: 25px;
   }
-  
+
   .contact-form,
   .booking-summary {
     padding: 25px;
@@ -405,55 +434,55 @@ function proceed() {
   .contact-information {
     padding: 30px 0;
   }
-  
+
   .breadcrumbs {
     padding: 10px;
   }
-  
+
   .step-number {
     width: 24px;
     height: 24px;
     font-size: 12px;
     margin-right: 6px;
   }
-  
+
   .step-text {
     font-size: 11px;
   }
-  
+
   .content-wrapper {
     flex-direction: column;
     gap: 25px;
   }
-  
+
   .contact-form,
   .booking-summary {
     width: 100%;
     padding: 20px;
   }
-  
+
   .contact-form h2 {
     font-size: 18px;
     margin-bottom: 20px;
   }
-  
+
   .form-group {
     margin-bottom: 20px;
   }
-  
+
   .proceed-button {
     width: 100%;
     padding: 12px;
   }
-  
+
   .image-placeholder {
     height: 180px;
   }
-  
+
   .room-details h3 {
     font-size: 18px;
   }
-  
+
   .price-item.total {
     font-size: 16px;
   }

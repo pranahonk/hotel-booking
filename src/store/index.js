@@ -14,7 +14,10 @@ const state = reactive({
   rooms: [],
   selectedRoomId: localStorage.getItem('selectedRoomId') || null,
   loading: false,
-  error: null
+  error: null,
+  config: {
+    API_URL: 'https://hotel-booking-api-zx9t.onrender.com/api'
+  }
 })
 
 const methods = {
