@@ -50,9 +50,9 @@ function register() {
 </script>
 
 <template>
-  <div class="register-page">
+  <div class="register">
     <div class="container">
-      <div class="auth-form">
+      <div class="register-form">
         <h1>Register</h1>
         
         <div v-if="errorMessage" class="error-message">

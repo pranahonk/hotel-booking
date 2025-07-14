@@ -86,8 +86,8 @@ function returnToHome() {
                 <span>${{ latestBooking.price.tax.toFixed(2) }}</span>
               </div>
               <div class="price-item total">
-                <span>Total Price</span>
-                <span>${{ latestBooking.price.total.toFixed(2) }}</span>
+                <span class="total-label">Total Price</span>
+                <span class="total-value">${{ latestBooking.price.total.toFixed(2) }}</span>
               </div>
             </div>
           </div>
@@ -95,10 +95,16 @@ function returnToHome() {
         
         <div class="guest-details">
           <h3>GUEST DETAILS</h3>
-          <p>
-            Name: {{ latestBooking.contactInfo.title }} {{ latestBooking.contactInfo.name }}<br>
-            Email Address: {{ latestBooking.contactInfo.email }}
-          </p>
+          <div class="guest-info">
+            <div class="guest-info-item">
+              <span class="info-label">Name:</span>
+              <span class="info-value">{{ latestBooking.contactInfo.title }} {{ latestBooking.contactInfo.name }}</span>
+            </div>
+            <div class="guest-info-item">
+              <span class="info-label">Email Address:</span>
+              <span class="info-value">{{ latestBooking.contactInfo.email }}</span>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -196,10 +202,8 @@ function returnToHome() {
 
 .booking-details {
   flex: 1;
-  background-color: #f5f5f5;
   padding: 30px;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .booking-details h3 {
@@ -266,25 +270,76 @@ function returnToHome() {
   padding-top: 18px;
 }
 
+.total-label {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+}
+
+.total-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #000;
+}
+
+.guest-info {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.guest-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #555;
+  font-size: 15px;
+}
+
+.info-value {
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+}
+
 .return-home {
   text-align: center;
   margin-top: 50px;
 }
 
+.actions {
+  margin-top: 40px;
+  text-align: center;
+}
+
 .home-button {
   background-color: #000;
   color: #fff;
-  padding: 12px 30px;
+  padding: 15px 35px;
   border: none;
   font-weight: bold;
   cursor: pointer;
   font-size: 16px;
   border-radius: 4px;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  min-width: 250px;
 }
 
 .home-button:hover {
   background-color: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.home-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Desktop styles */

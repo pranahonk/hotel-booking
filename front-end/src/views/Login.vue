@@ -37,9 +37,9 @@ function login() {
 </script>
 
 <template>
-  <div class="login-page">
+  <div class="login">
     <div class="container">
-      <div class="auth-form">
+      <div class="login-form">
         <h1>Login</h1>
         
         <div v-if="errorMessage" class="error-message">
