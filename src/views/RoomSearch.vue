@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import store from '../store'
 
@@ -7,6 +7,25 @@ const router = useRouter()
 const checkIn = ref('')
 const checkOut = ref('')
 const guests = ref(2)
+const searchError = ref('')
+const isSearching = ref(false)
+
+// Computed property to check if the search form is valid
+const isFormValid = computed(() => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  const checkInDate = new Date(checkIn.value)
+  const checkOutDate = new Date(checkOut.value)
+  
+  return (
+    checkIn.value && 
+    checkOut.value && 
+    checkInDate >= today && 
+    checkOutDate > checkInDate && 
+    guests.value > 0
+  )
+})
 
 onMounted(() => {
   // Set default dates (today and tomorrow)
@@ -31,13 +50,35 @@ function formatDate(date) {
   return `${year}-${month}-${day}`
 }
 
-function searchRooms() {
-  store.updateBookingData({
-    checkIn: checkIn.value,
-    checkOut: checkOut.value,
-    guests: guests.value
-  })
-  router.push('/select-room')
+async function searchRooms() {
+  if (!isFormValid.value) {
+    searchError.value = 'Please check your dates and guest count'
+    return
+  }
+  
+  searchError.value = ''
+  isSearching.value = true
+  
+  try {
+    // Update booking data in store
+    store.updateBookingData({
+      checkIn: checkIn.value,
+      checkOut: checkOut.value,
+      guests: guests.value
+    })
+    
+    // Pre-fetch rooms to check if there are any available
+    // This will populate the store with rooms before navigating
+    await store.fetchRooms()
+    
+    // Navigate to room selection page
+    router.push('/select-room')
+  } catch (err) {
+    searchError.value = err.message || 'Failed to search for rooms. Please try again.'
+    console.error('Error searching rooms:', err)
+  } finally {
+    isSearching.value = false
+  }
 }
 </script>
 
@@ -66,6 +107,7 @@ function searchRooms() {
               id="check-in" 
               v-model="checkIn" 
               :min="formatDate(new Date())"
+              :disabled="isSearching"
             >
           </div>
           
@@ -78,15 +120,40 @@ function searchRooms() {
               id="check-out" 
               v-model="checkOut" 
               :min="checkIn"
+              :disabled="isSearching"
             >
           </div>
         </div>
         
-        <button class="search-button" @click="searchRooms">SEARCH FOR ROOMS</button>
+        <!-- Error message -->
+        <div v-if="searchError" class="error-message">
+          {{ searchError }}
+        </div>
+        
+        <!-- Search button with loading state -->
+        <button 
+          class="search-button" 
+          @click="searchRooms" 
+          :disabled="isSearching || !isFormValid"
+        >
+          <span v-if="isSearching" class="loading-spinner-small"></span>
+          <span v-else>SEARCH FOR ROOMS</span>
+        </button>
+        
+        <!-- Form validation message -->
+        <div v-if="!isFormValid && !searchError" class="validation-message">
+          Please select valid check-in and check-out dates
+        </div>
       </div>
       
       <div class="placeholder-image">
-        <div class="image-placeholder">1000 × 400</div>
+        <div class="image-placeholder">
+          <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8aG90ZWx8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=1000&q=60" 
+               alt="Hotel Room" 
+               class="hotel-image" 
+               onerror="this.style.display='none'; this.parentNode.innerHTML='1000 × 400';"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -189,6 +256,53 @@ select, input {
   font-size: 24px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.hotel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Loading spinner styles */
+.loading-spinner-small {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error message styles */
+.error-message {
+  color: #e53935;
+  background-color: #ffebee;
+  padding: 10px 15px;
+  border-radius: 4px;
+  margin: 15px 0;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Validation message styles */
+.validation-message {
+  color: #ff9800;
+  font-size: 14px;
+  margin-top: 10px;
+  text-align: center;
+}
+
+/* Disabled button styles */
+.search-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
 
 /* Desktop styles */

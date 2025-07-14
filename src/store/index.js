@@ -1,4 +1,5 @@
 import { reactive } from 'vue'
+import roomService from '../services/room.service.js'
 
 const state = reactive({
   user: JSON.parse(localStorage.getItem('user')) || null,
@@ -10,32 +11,9 @@ const state = reactive({
     contactInfo: null
   },
   bookings: JSON.parse(localStorage.getItem('bookings')) || [],
-  rooms: [
-    {
-      id: 1,
-      title: 'ROOM 1 TITLE',
-      description: 'LOREM IPSUM DOLOR SIT AMET',
-      longDescription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam ac ex a risus dapibus pharetra facilisis ac felis.',
-      price: 1080,
-      image: '340x210'
-    },
-    {
-      id: 2,
-      title: 'ROOM 2 TITLE',
-      description: 'LOREM IPSUM DOLOR SIT AMET',
-      longDescription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam ac ex a risus dapibus pharetra facilisis ac felis.',
-      price: 1280,
-      image: '340x210'
-    },
-    {
-      id: 3,
-      title: 'ROOM 3 TITLE',
-      description: 'LOREM IPSUM DOLOR SIT AMET',
-      longDescription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam ac ex a risus dapibus pharetra facilisis ac felis.',
-      price: 980,
-      image: '340x210'
-    }
-  ]
+  rooms: [],
+  loading: false,
+  error: null
 })
 
 const methods = {
@@ -69,14 +47,63 @@ const methods = {
     state.bookings = state.bookings.filter(booking => booking.id !== bookingId)
     localStorage.setItem('bookings', JSON.stringify(state.bookings))
   },
-  getAvailableRooms() {
-    // In a real app, this would filter based on availability
-    return state.rooms
+  async fetchRooms(filters = {}) {
+    try {
+      state.loading = true
+      state.error = null
+      
+      // Add capacity filter based on guests if available
+      if (state.bookingData.guests) {
+        filters.capacity = state.bookingData.guests
+      }
+      
+      const response = await roomService.getRooms(filters)
+      
+      if (response.status === 'success') {
+        state.rooms = response.data.rooms.map(room => ({
+          ...room,
+          id: room._id || room.id, // Ensure we have an id property
+          // Convert features array to longDescription if needed
+          longDescription: room.features ? room.features.join(', ') : room.description
+        }))
+      } else {
+        state.error = 'Failed to fetch rooms'
+      }
+      
+      return state.rooms
+    } catch (error) {
+      console.error('Error fetching rooms:', error)
+      state.error = error.message || 'Failed to fetch rooms'
+      return []
+    } finally {
+      state.loading = false
+    }
+  },
+  async getAvailableRooms() {
+    // If we don't have rooms yet, fetch them
+    if (state.rooms.length === 0) {
+      await this.fetchRooms()
+    }
+    
+    // In a real app with complete API, we would check availability for specific dates
+    // For now, we'll just return all rooms that match capacity
+    return state.rooms.filter(room => 
+      room.capacity >= state.bookingData.guests && room.available
+    )
   },
   sortRoomsByPrice(ascending = true) {
     return [...state.rooms].sort((a, b) => {
       return ascending ? a.price - b.price : b.price - a.price
     })
+  },
+  async checkRoomAvailability(roomId, checkIn, checkOut) {
+    try {
+      const response = await roomService.checkAvailability(roomId, checkIn, checkOut)
+      return response.status === 'success' && response.data.available
+    } catch (error) {
+      console.error('Error checking room availability:', error)
+      return false
+    }
   }
 }
 

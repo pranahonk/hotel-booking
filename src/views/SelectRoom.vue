@@ -6,6 +6,8 @@ import store from '../store'
 const router = useRouter()
 const sortOrder = ref('lowest')
 const rooms = ref([])
+const loading = ref(true)
+const error = ref(null)
 
 const bookingData = computed(() => store.state.bookingData)
 const checkInDate = computed(() => new Date(bookingData.value.checkIn))
@@ -16,7 +18,22 @@ const nights = computed(() => {
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 })
 
-onMounted(() => {
+// Function to fetch rooms that can be called for initial load or retry
+async function fetchRooms() {
+  try {
+    loading.value = true
+    error.value = null
+    rooms.value = await store.getAvailableRooms()
+    sortRooms()
+  } catch (err) {
+    error.value = err.message || 'Failed to load rooms'
+    console.error('Error loading rooms:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(async () => {
   // Redirect to search page if no booking data
   if (!bookingData.value.checkIn || !bookingData.value.checkOut) {
     router.push('/')
@@ -24,8 +41,7 @@ onMounted(() => {
   }
   
   // Get available rooms
-  rooms.value = store.getAvailableRooms()
-  sortRooms()
+  await fetchRooms()
 })
 
 function sortRooms() {
@@ -39,6 +55,12 @@ function formatDate(dateString) {
     day: 'numeric', 
     year: 'numeric' 
   })
+}
+
+function getImageUrl(imageName) {
+  // In a real app, this would use the actual image URL from the API
+  // For now, we'll return a placeholder
+  return imageName || 'placeholder.jpg'
 }
 
 function selectRoom(room) {
@@ -73,7 +95,7 @@ function selectRoom(room) {
       
       <div class="booking-dates">
         <h2>{{ formatDate(bookingData.checkIn) }} → {{ formatDate(bookingData.checkOut) }}</h2>
-        <p>{{ nights }} NIGHT | {{ bookingData.guests }} GUEST</p>
+        <p>{{ nights }} NIGHT{{ nights > 1 ? 'S' : '' }} | {{ bookingData.guests }} GUEST{{ bookingData.guests > 1 ? 'S' : '' }}</p>
       </div>
       
       <div class="sort-options">
@@ -84,18 +106,45 @@ function selectRoom(room) {
         </select>
       </div>
       
-      <div class="room-list">
+      <!-- Loading state -->
+      <div v-if="loading" class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>Loading available rooms...</p>
+      </div>
+      
+      <!-- Error state -->
+      <div v-else-if="error" class="error-container">
+        <p>{{ error }}</p>
+        <button @click="fetchRooms" class="retry-button">Try Again</button>
+      </div>
+      
+      <!-- Empty state -->
+      <div v-else-if="rooms.length === 0" class="empty-container">
+        <p>No rooms available for the selected dates and number of guests.</p>
+        <button @click="router.push('/')" class="back-button">Change Search</button>
+      </div>
+      
+      <!-- Room list -->
+      <div v-else class="room-list">
         <div v-for="room in rooms" :key="room.id" class="room-card">
           <div class="room-image">
-            <div class="image-placeholder">340 × 210</div>
+            <!-- Use placeholder for now, in production would use actual images -->
+            <div class="image-placeholder">{{ room.images && room.images[0] ? room.images[0] : '340 × 210' }}</div>
           </div>
           <div class="room-info">
             <h3>{{ room.title }}</h3>
             <p class="room-description">{{ room.description }}</p>
-            <p class="room-long-description">{{ room.longDescription }}</p>
+            <div class="room-features">
+              <h4>Features:</h4>
+              <ul v-if="room.features && room.features.length">
+                <li v-for="(feature, index) in room.features" :key="index">{{ feature }}</li>
+              </ul>
+              <p v-else class="room-long-description">{{ room.longDescription }}</p>
+            </div>
           </div>
           <div class="room-price">
-            <h4>S${{ room.price }}<span class="per-night">/night</span></h4>
+            <h4>${{ room.price }}<span class="per-night">/night</span></h4>
+            <p class="capacity">Max Guests: {{ room.capacity }}</p>
             <p class="tax-note">Subject to GST and charges</p>
             <button class="book-button" @click="selectRoom(room)">BOOK ROOM</button>
           </div>
@@ -194,6 +243,90 @@ function selectRoom(room) {
   cursor: pointer;
 }
 
+/* Loading state styles */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: #000;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error state styles */
+.error-container {
+  text-align: center;
+  padding: 40px 0;
+  background-color: #fff3f3;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.error-container p {
+  color: #e53935;
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.retry-button {
+  background-color: #e53935;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.retry-button:hover {
+  background-color: #c62828;
+}
+
+/* Empty state styles */
+.empty-container {
+  text-align: center;
+  padding: 40px 0;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.empty-container p {
+  font-size: 18px;
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.back-button {
+  background-color: #000;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.back-button:hover {
+  background-color: #333;
+}
+
 .room-list {
   display: flex;
   flex-direction: column;
@@ -247,6 +380,35 @@ function selectRoom(room) {
   margin-bottom: 12px;
 }
 
+.room-features {
+  margin-top: 15px;
+}
+
+.room-features h4 {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.room-features ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.room-features li {
+  padding: 5px 0;
+  font-size: 14px;
+  position: relative;
+  padding-left: 20px;
+}
+
+.room-features li:before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #4caf50;
+}
+
 .room-long-description {
   font-size: 15px;
   line-height: 1.6;
@@ -268,6 +430,12 @@ function selectRoom(room) {
 .per-night {
   font-size: 16px;
   font-weight: normal;
+}
+
+.capacity {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 5px;
 }
 
 .tax-note {

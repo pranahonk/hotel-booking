@@ -28,7 +28,13 @@ const api = {
         headers: this.getHeaders(),
       });
       
-      return await response.json();
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'An error occurred while fetching data');
+      }
+      
+      return data;
     } catch (error) {
       console.error('API GET Error:', error);
       throw error;
@@ -43,7 +49,13 @@ const api = {
         body: JSON.stringify(data),
       });
       
-      return await response.json();
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(responseData.message || 'An error occurred while posting data');
+      }
+      
+      return responseData;
     } catch (error) {
       console.error('API POST Error:', error);
       throw error;
@@ -58,7 +70,13 @@ const api = {
         body: JSON.stringify(data),
       });
       
-      return await response.json();
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(responseData.message || 'An error occurred while updating data');
+      }
+      
+      return responseData;
     } catch (error) {
       console.error('API PATCH Error:', error);
       throw error;
@@ -72,7 +90,13 @@ const api = {
         headers: this.getHeaders(),
       });
       
-      return await response.json();
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(responseData.message || 'An error occurred while deleting data');
+      }
+      
+      return responseData;
     } catch (error) {
       console.error('API DELETE Error:', error);
       throw error;

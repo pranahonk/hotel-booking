@@ -9,8 +9,10 @@ const roomService = {
     if (Object.keys(filters).length > 0) {
       const params = new URLSearchParams();
       
-      if (filters.price) params.append('price[lte]', filters.price);
-      if (filters.capacity) params.append('capacity[gte]', filters.capacity);
+      // Handle price filters with gte and lte options
+      if (filters.priceGte) params.append('price[gte]', filters.priceGte);
+      if (filters.priceLte) params.append('price[lte]', filters.priceLte);
+      if (filters.capacity) params.append('capacity', filters.capacity);
       if (filters.sort) params.append('sort', filters.sort);
       if (filters.page) params.append('page', filters.page);
       if (filters.limit) params.append('limit', filters.limit);
@@ -28,7 +30,12 @@ const roomService = {
 
   // Check room availability for specific dates
   async checkAvailability(roomId, checkIn, checkOut) {
-    return await api.get(`/rooms/${roomId}/check-availability?checkIn=${checkIn}&checkOut=${checkOut}`);
+    const params = new URLSearchParams();
+    params.append('roomId', roomId);
+    params.append('checkIn', checkIn);
+    params.append('checkOut', checkOut);
+    
+    return await api.get(`/rooms/availability?${params.toString()}`);
   }
 };
 
