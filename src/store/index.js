@@ -12,6 +12,7 @@ const state = reactive({
   },
   bookings: JSON.parse(localStorage.getItem('bookings')) || [],
   rooms: [],
+  selectedRoomId: localStorage.getItem('selectedRoomId') || null,
   loading: false,
   error: null
 })
@@ -79,17 +80,33 @@ const methods = {
       state.loading = false
     }
   },
-  async getAvailableRooms() {
-    // If we don't have rooms yet, fetch them
-    if (state.rooms.length === 0) {
-      await this.fetchRooms()
+  async getAvailableRooms(checkIn, checkOut) {
+    try {
+      state.loading = true
+      state.error = null
+      
+      // Create filters for the API call
+      const filters = {
+        checkIn: checkIn || state.bookingData.checkIn,
+        checkOut: checkOut || state.bookingData.checkOut,
+        capacity: state.bookingData.guests
+      }
+      
+      // Fetch rooms with the filters
+      await this.fetchRooms(filters)
+      
+      // Return the filtered rooms
+      return state.rooms.filter(room => 
+        room.capacity >= state.bookingData.guests && 
+        (room.available !== false) // Only show available rooms
+      )
+    } catch (error) {
+      console.error('Error getting available rooms:', error)
+      state.error = error.message || 'Failed to get available rooms'
+      return []
+    } finally {
+      state.loading = false
     }
-    
-    // In a real app with complete API, we would check availability for specific dates
-    // For now, we'll just return all rooms that match capacity
-    return state.rooms.filter(room => 
-      room.capacity >= state.bookingData.guests && room.available
-    )
   },
   sortRoomsByPrice(ascending = true) {
     return [...state.rooms].sort((a, b) => {
@@ -104,6 +121,10 @@ const methods = {
       console.error('Error checking room availability:', error)
       return false
     }
+  },
+  setSelectedRoomId(roomId) {
+    state.selectedRoomId = roomId
+    localStorage.setItem('selectedRoomId', roomId)
   }
 }
 

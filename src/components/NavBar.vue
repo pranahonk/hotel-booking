@@ -109,10 +109,6 @@ onBeforeUnmount(() => {
         <!-- Common navigation links -->
         <div class="nav-links">
           <router-link to="/" class="nav-link" @click="closeMobileMenu">Home</router-link>
-          <router-link to="/about" class="nav-link" @click="closeMobileMenu">About</router-link>
-          <router-link to="/rooms" class="nav-link" @click="closeMobileMenu">Rooms</router-link>
-          <router-link to="/contact" class="nav-link" @click="closeMobileMenu">Contact</router-link>
-          <router-link v-if="user" to="/create-booking" class="nav-link highlight" @click="closeMobileMenu">Book Now</router-link>
         </div>
         
         <div class="navbar-end">

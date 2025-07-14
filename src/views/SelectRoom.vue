@@ -2,6 +2,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import store from '../store'
+import authService from '../services/auth.service.js'
+import api from '../services/api.js'
 
 const router = useRouter()
 const sortOrder = ref('lowest')
@@ -23,7 +25,23 @@ async function fetchRooms() {
   try {
     loading.value = true
     error.value = null
-    rooms.value = await store.getAvailableRooms()
+
+    // Use the fetchRooms method with filters for check-in, check-out and capacity
+    const filters = {
+      checkIn: bookingData.value.checkIn,
+      checkOut: bookingData.value.checkOut,
+      capacity: bookingData.value.guests
+    }
+
+    // Fetch rooms using the store method
+    rooms.value = await store.fetchRooms(filters)
+
+    // Filter rooms that match our capacity requirements
+    rooms.value = rooms.value.filter(room =>
+      room.capacity >= bookingData.value.guests &&
+      (room.available !== false) // Only show available rooms
+    )
+
     sortRooms()
   } catch (err) {
     error.value = err.message || 'Failed to load rooms'
@@ -39,7 +57,7 @@ onMounted(async () => {
     router.push('/')
     return
   }
-  
+
   // Get available rooms
   await fetchRooms()
 })
@@ -50,10 +68,10 @@ function sortRooms() {
 
 function formatDate(dateString) {
   const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', { 
-    month: 'short', 
-    day: 'numeric', 
-    year: 'numeric' 
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
   })
 }
 
@@ -63,11 +81,67 @@ function getImageUrl(imageName) {
   return imageName || 'placeholder.jpg'
 }
 
-function selectRoom(room) {
+const isProcessing = ref(false)
+const bookingError = ref(null)
+
+async function selectRoom(room) {
+  // Store the selected room
   store.updateBookingData({
     selectedRoom: room
   })
-  router.push('/contact-information')
+  store.setSelectedRoomId(room.id || room._id)
+
+  // Check if user is authenticated
+  const isAuthenticated = authService.isAuthenticated()
+
+  if (!isAuthenticated) {
+    // If not authenticated, redirect to login page with return path
+    router.push({
+      path: '/login',
+      query: { redirect: router.currentRoute.value.fullPath }
+    })
+    return
+  }
+
+  // User is authenticated, proceed with booking API call
+  try {
+    isProcessing.value = true
+    bookingError.value = null
+
+    const user = store.state.user
+
+    // Create booking data object according to API requirements
+    const bookingPayload = {
+      room: room.id || room._id,
+      checkIn: bookingData.value.checkIn,
+      checkOut: bookingData.value.checkOut,
+      guests: parseInt(bookingData.value.guests),
+      contactInfo: {
+        title: user?.title || 'Mr',
+        name: user?.name || '',
+        email: user?.email || ''
+      }
+    }
+
+    console.log('Sending booking data:', bookingPayload)
+
+    // Send POST request to /api/bookings
+    const response = await api.post('/api/bookings', bookingPayload)
+
+    // Handle successful booking
+    if (response && response.data) {
+      // Show success message
+      alert('Booking created successfully!')
+
+      // Navigate to booking details page
+      router.push(`/bookings/${response.data._id || response.data.id}`)
+    }
+  } catch (err) {
+    bookingError.value = err.message || 'Failed to create booking. Please try again.'
+    console.error('Error creating booking:', err)
+  } finally {
+    isProcessing.value = false
+  }
 }
 </script>
 
@@ -92,12 +166,12 @@ function selectRoom(room) {
           <span class="step-text">CONFIRMATION</span>
         </div>
       </div>
-      
+
       <div class="booking-dates">
         <h2>{{ formatDate(bookingData.checkIn) }} → {{ formatDate(bookingData.checkOut) }}</h2>
         <p>{{ nights }} NIGHT{{ nights > 1 ? 'S' : '' }} | {{ bookingData.guests }} GUEST{{ bookingData.guests > 1 ? 'S' : '' }}</p>
       </div>
-      
+
       <div class="sort-options">
         <span>SORT BY:</span>
         <select v-model="sortOrder" @change="sortRooms">
@@ -105,25 +179,25 @@ function selectRoom(room) {
           <option value="highest">HIGHEST PRICE</option>
         </select>
       </div>
-      
+
       <!-- Loading state -->
       <div v-if="loading" class="loading-container">
         <div class="loading-spinner"></div>
         <p>Loading available rooms...</p>
       </div>
-      
+
       <!-- Error state -->
       <div v-else-if="error" class="error-container">
         <p>{{ error }}</p>
         <button @click="fetchRooms" class="retry-button">Try Again</button>
       </div>
-      
+
       <!-- Empty state -->
       <div v-else-if="rooms.length === 0" class="empty-container">
         <p>No rooms available for the selected dates and number of guests.</p>
         <button @click="router.push('/')" class="back-button">Change Search</button>
       </div>
-      
+
       <!-- Room list -->
       <div v-else class="room-list">
         <div v-for="room in rooms" :key="room.id" class="room-card">
@@ -146,7 +220,11 @@ function selectRoom(room) {
             <h4>${{ room.price }}<span class="per-night">/night</span></h4>
             <p class="capacity">Max Guests: {{ room.capacity }}</p>
             <p class="tax-note">Subject to GST and charges</p>
-            <button class="book-button" @click="selectRoom(room)">BOOK ROOM</button>
+            <button class="book-button" @click="selectRoom(room)" :disabled="isProcessing">
+              <span v-if="isProcessing" class="loading-spinner-small"></span>
+              <span v-else>PROCEED</span>
+            </button>
+            <div v-if="bookingError" class="booking-error">{{ bookingError }}</div>
           </div>
         </div>
       </div>
@@ -461,24 +539,53 @@ function selectRoom(room) {
   background-color: #333;
 }
 
+.book-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.loading-spinner-small {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.booking-error {
+  color: #e53935;
+  background-color: #ffebee;
+  padding: 10px 15px;
+  border-radius: 4px;
+  margin-top: 15px;
+  font-size: 14px;
+  text-align: center;
+}
+
 /* Desktop styles */
 @media (min-width: 1200px) {
   .select-room {
     padding: 60px 0;
   }
-  
+
   .room-card {
     padding: 30px;
   }
-  
+
   .room-image {
     flex: 0 0 380px;
   }
-  
+
   .image-placeholder {
     height: 230px;
   }
-  
+
   .room-info h3 {
     font-size: 22px;
   }
@@ -489,20 +596,20 @@ function selectRoom(room) {
   .room-card {
     padding: 20px;
   }
-  
+
   .room-image {
     flex: 0 0 280px;
     margin-right: 20px;
   }
-  
+
   .image-placeholder {
     height: 180px;
   }
-  
+
   .room-info {
     padding-right: 15px;
   }
-  
+
   .room-price {
     flex: 0 0 180px;
   }
@@ -513,56 +620,56 @@ function selectRoom(room) {
   .select-room {
     padding: 30px 0;
   }
-  
+
   .breadcrumbs {
     padding: 10px;
   }
-  
+
   .step-number {
     width: 24px;
     height: 24px;
     font-size: 12px;
     margin-right: 6px;
   }
-  
+
   .step-text {
     font-size: 11px;
   }
-  
+
   .booking-dates {
     padding: 15px;
   }
-  
+
   .booking-dates h2 {
     font-size: 18px;
   }
-  
+
   .sort-options {
     justify-content: space-between;
   }
-  
+
   .room-card {
     flex-direction: column;
     padding: 15px;
   }
-  
+
   .room-image {
     margin-right: 0;
     margin-bottom: 20px;
     width: 100%;
   }
-  
+
   .room-info {
     padding-right: 0;
     margin-bottom: 20px;
   }
-  
+
   .room-price {
     width: 100%;
     text-align: left;
     align-items: flex-start;
   }
-  
+
   .book-button {
     width: 100%;
     text-align: center;
