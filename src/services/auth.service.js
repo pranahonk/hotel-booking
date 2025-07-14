@@ -24,7 +24,7 @@ const authService = {
   // Login user
   // Example: { "email": "john@example.com", "password": "password123" }
   async login(credentials) {
-    const response = await api.post('/api/auth/login', credentials);
+    const response = await api.post('/auth/login', credentials);
     if (response.token) {
       api.setToken(response.token);
       // Extract user from the nested structure if it exists
@@ -40,7 +40,7 @@ const authService = {
   },
 
   async getCurrentUser() {
-    const response = await api.get('/api/auth/me');
+    const response = await api.get('/auth/me');
     // Extract user from the nested structure if it exists
     if (response.data && response.data.user) {
       return {
@@ -58,6 +58,17 @@ const authService = {
 
   isAuthenticated() {
     return api.isAuthenticated();
+  },
+  
+  async updateProfile(userData) {
+    const response = await api.put('/api/auth/profile', userData);
+    if (response.data && response.data.user) {
+      return {
+        status: response.status,
+        user: response.data.user
+      };
+    }
+    return response;
   }
 };
 

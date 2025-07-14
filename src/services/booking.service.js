@@ -20,6 +20,11 @@ const bookingService = {
   // Cancel a booking
   async cancelBooking(bookingId) {
     return await api.patch(`/bookings/${bookingId}/cancel`);
+  },
+  
+  // Get available rooms for booking based on date range
+  async getAvailableRooms(checkInDate, checkOutDate) {
+    return await api.get(`/rooms/available?checkIn=${checkInDate}&checkOut=${checkOutDate}`);
   }
 };
 

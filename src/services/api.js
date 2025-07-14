@@ -82,6 +82,27 @@ const api = {
       throw error;
     }
   },
+  
+  async put(endpoint, data) {
+    try {
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
+        method: 'PUT',
+        headers: this.getHeaders(),
+        body: JSON.stringify(data),
+      });
+      
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(responseData.message || 'An error occurred while updating data');
+      }
+      
+      return responseData;
+    } catch (error) {
+      console.error('API PUT Error:', error);
+      throw error;
+    }
+  },
 
   async delete(endpoint) {
     try {
