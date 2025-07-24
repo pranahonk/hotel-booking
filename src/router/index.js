@@ -60,7 +60,6 @@ const routes = [
     component: BookingDetails,
     meta: { requiresAuth: true }
   },
-  // CreateBooking route removed
 ]
 
 const router = createRouter({

@@ -1,10 +1,8 @@
 import config from '../config.js';
 
 const api = {
-  // Base URL from config
   baseURL: config.API_URL,
 
-  // Helper method to build headers
   getHeaders() {
     const headers = {
       'Content-Type': 'application/json',
